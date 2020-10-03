@@ -1,0 +1,332 @@
+
+
+#include "iostream"
+using namespace std;
+
+class node{
+public:
+    int data;
+    node *left;
+    node *right;
+
+    node(int d){
+        data=d;
+        left=NULL;
+        right=NULL;
+
+
+    }
+
+
+};
+
+
+void print_tree(node *head){
+
+    if(!head){
+        return;
+    }
+
+    print_tree(head->left);
+    cout<<head->data<<endl;
+    print_tree(head->right);
+
+
+}
+
+
+
+node *zig(node *x)
+{
+    node *y = x->left;
+    x->left = y->right;
+    y->right = x;
+    return y;
+}
+
+ 
+node *zag(node *x)
+{
+    node *y = x->right;
+    x->right = y->left;
+    y->left = x;
+    return y;
+}
+
+ 
+node *splay(node *head, int data)
+{
+
+    if (head == NULL || head->data == data) {
+        return head;
+
+    }
+
+    if (head->data > data){
+
+        if (head->left == NULL) return head;
+        
+        if (head->left->data > data){
+            head->left->left = splay(head->left->left, data);
+            head = zig(head);
+            
+        }
+        else if (head->left->data < data) {
+
+            head->left->right = splay(head->left->right, data);
+
+            if (head->left->right != NULL) {
+            head->left = zag(head->left);
+
+        }
+        }
+
+        return (head->left == NULL)? head: zig(head);
+    }
+    
+    else{
+  
+        if (head->right == NULL) {
+            return head;
+
+        }
+        
+        if (head->right->data > data){
+
+            head->right->left = splay(head->right->left, data);
+ 
+            if (head->right->left != NULL)
+                head->right = zig(head->right);
+        }
+        
+        else if (head->right->data < data){
+ 
+            head->right->right = splay(head->right->right, data);
+            head = zag(head);
+        }
+ 
+        return (head->right == NULL)? head: zag(head);
+    }
+}
+
+struct node* add_node(node *head,int k){
+
+    if (head == NULL) {
+        return new node(k);
+
+    }
+    head = splay(head, k);
+
+    if (head->data == k) {
+        return head;
+
+    }
+
+    node *newnode = new node(k);
+
+    if (head->data > k)
+    {
+        newnode->right = head;
+        newnode->left = head->left;
+        head->left = NULL;
+    }
+
+    else
+    {
+        newnode->left = head;
+        newnode->right = head->right;
+        head->right = NULL;
+    }
+
+    return newnode;
+
+
+}
+
+struct node *min_node(struct node *head) {
+    struct node *current = head;
+
+    while (current && current->left != NULL) {
+        current = current->left;
+
+    }
+
+    return current;
+}
+
+
+struct node* delete_node(node *head, int key){
+    struct node *temp;
+    if (!head){
+        return NULL;
+
+        }
+
+
+    head = splay(head, key);
+
+
+    if (key !=head->data) {
+        return head;
+
+    }
+
+
+    if (!head->left)
+    {
+        temp = head;
+        head = head->right;
+    }
+
+    else
+    {
+        temp = head;
+
+
+        head = splay(head->left, key);
+
+
+        head->right = temp->right;
+    }
+
+    free(temp);
+
+    return head;
+
+
+}
+
+
+
+void pre_order(node *head)
+{
+    if (head != NULL)
+    {
+        cout<<head->data<<" ";
+        pre_order(head->left);
+        pre_order(head->right);
+    }
+}
+
+node *search_node(node *head, int d){
+
+    if(head==NULL){
+
+        return NULL;
+
+    }
+
+    else if(head->data==d){
+
+        return splay(head,d);
+    }
+
+    else if(d>head->data){
+
+        return search_node(head->right,d);
+    }
+
+    else{
+
+        return search_node(head->left,d);
+    }
+
+
+
+}
+
+
+
+int main(){
+    node *root=NULL;
+    int choice=-1;
+    cout<<"Self Balancing Splay Tree!"<<endl;
+
+
+    while(choice!=0){
+
+        cout<<"Enter your choice"<<endl;
+        cout<<"1: To add a node"<<endl;
+        cout<<"2: To delete a node"<<endl;
+        cout<<"3: To print the tree inorder"<<endl;
+        cout<<"4: To find a node in the tree"<<endl;
+        cout<<"5: To print the preoder of the tree"<<endl;
+        cout<<"0: To exit from the program"<<endl;
+
+        cin>>choice;
+
+        switch (choice) {
+
+            case 1:{
+
+                cout<<"Enter the node to insert:"<<endl;
+                int data;
+                cin>>data;
+                root=add_node(root,data);
+                break;
+
+            }
+
+            case 2:{
+                cout<<"Enter the node to delete:"<<endl;
+                int data;
+                cin>>data;
+                root=delete_node(root,data);
+                break;
+
+
+            }
+
+            case 3:{
+                print_tree(root);
+                break;
+
+
+            }
+
+            case 4:{
+                cout<<"Enter the node to search:"<<endl;
+                int data;
+                cin>>data;
+                if(search_node(root,data)!=NULL){
+
+                    cout<<"node found!"<<endl;
+                    pre_order(root);
+                }
+
+                else{
+
+                    cout<<"node not found!"<<endl;
+                }
+                break;
+
+
+            }
+
+            case 5:{
+
+                pre_order(root);
+                break;
+
+            }
+
+            case 0:{
+
+                exit(0);
+            }
+
+            default:{
+
+                cout<<"Invalid choice! Please enter again:"<<endl;
+                break;
+            }
+
+
+        }
+
+
+    }
+
+
+}
+
